@@ -20,7 +20,7 @@ def build_vocab(corpus_file, vocab_file, tag_file):
 
     if not os.path.exists(vocab_file):
         with open(vocab_file, "w") as f:
-            for word in ["<UKN>"] + list(words):
+            for word in ["<UKN>-<UKN>"] + list(words):
                 f.write(word+"\n")
 
     tag_sort = {
@@ -37,7 +37,7 @@ def build_vocab(corpus_file, vocab_file, tag_file):
 
     if not os.path.exists(tag_file):
         with open(tag_file, "w") as f:
-            for tag in ["<UKN>"] + tags:
+            for tag in ["<UKN>-<UKN>"] + tags:
                 f.write(tag+"\n")
 
 

@@ -1,20 +1,14 @@
-import os
 import json
+import os
 
 import numpy as np
 import tensorflow as tf
 from tensorflow import data
 
 from crf_layer import CRFLoss
+from metrics import IOBESF1
 from model import BiLSTMCRF
 from utils import build_vocab, read_vocab, tokenize, format_result
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = '3'    # 只显示 Error
-
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
 
 
 def train(config, params):
@@ -52,7 +46,7 @@ def train(config, params):
     model.compile(
         loss=CRFLoss(model.crf, model.dtype),
         optimizer=tf.keras.optimizers.Adam(params["lr"]),
-        metrics=[model.crf.viterbi_accuracy],
+        metrics=[model.crf.viterbi_accuracy, IOBESF1(id2tag)],
         run_eagerly=True)
     model.build((None, train_text.shape[-1]))
     model.summary()
@@ -63,7 +57,7 @@ def train(config, params):
             filepath=config["ckpt_path"],
             save_weights_only=True,
             save_best_only=True,
-            monitor="val_accuracy",
+            monitor="val_f1",
             mode="max"),
     ]
 
@@ -76,6 +70,7 @@ def train(config, params):
 
 
 def predict(text, config, params):
+    """模型预测。"""
     # 读取词典
     vocab2id, id2vocab = read_vocab(config["vocab_file"])
     tag2id, id2tag = read_vocab(config["tag_file"])
@@ -119,5 +114,5 @@ if __name__ == '__main__':
 
     text = "中共中央致中国致公党十一大的贺词"
 
-    # train(config, params)
-    predict(text, config, params)
+    train(config, params)
+    # predict(text, config, params)
