@@ -54,7 +54,7 @@ def read_vocab(vocab_file):
     return vocab2id, id2vocab
 
 
-def tokenize(filename, vocab2id, tag2id):
+def tokenize(filename, vocab2id, tag2id, maxlen):
     """数据预处理。"""
     contents, labels = list(), list()
     content, label = list(), list()
@@ -78,8 +78,10 @@ def tokenize(filename, vocab2id, tag2id):
             content = list()
             label = list()
 
-    contents = tf.keras.preprocessing.sequence.pad_sequences(contents, padding="post")
-    labels = tf.keras.preprocessing.sequence.pad_sequences(labels, padding="post")
+    contents = tf.keras.preprocessing.sequence.pad_sequences(
+        contents, maxlen=maxlen, padding="post")
+    labels = tf.keras.preprocessing.sequence.pad_sequences(
+        labels, maxlen=maxlen, padding="post")
     labels = tf.one_hot(labels, len(tag2id))
 
     return contents, labels
